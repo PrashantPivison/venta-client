@@ -1,0 +1,86 @@
+[
+  {
+    "title": "Cuplock Scaffolding System",
+    "slug": "cuplock-scaffolding-system",
+    "description": "Complete modular scaffolding system with quick assembly and superior load-bearing capacity.",
+    "image": "cuplock-scaffolding-system.png"
+  },
+  {
+    "title": "Standard Vertical",
+    "slug": "standard-vertical",
+    "description": "Durable vertical posts with welded cups for secure horizontal ledger connections.",
+    "image": "standard-vertical.png"
+  },
+  {
+    "title": "Ledger Horizontal",
+    "slug": "ledger-horizontal",
+    "description": "Heavy-duty horizontal ledgers with blade ends for cuplock system integration.",
+    "image": "ledger-horizontal.png"
+  },
+  {
+    "title": "Intermediate Transom",
+    "slug": "intermediate-transom",
+    "description": "Cross-bracing transom for enhanced structural stability and platform support.",
+    "image": "intermediate-transom.png"
+  },
+  {
+    "title": "Prop",
+    "slug": "prop",
+    "description": "Adjustable steel props for vertical support in formwork and temporary structures.",
+    "image": "prop.png"
+  },
+  {
+    "title": "Universal Jack",
+    "slug": "universal-jack",
+    "description": "Versatile base and head jacks with adjustable height for scaffolding systems.",
+    "image": "universal-jack.png"
+  },
+  {
+    "title": "Base Plate with Socket",
+    "slug": "base-plate-with-socket",
+    "description": "Heavy-duty base plate with integrated socket for secure vertical standard mounting.",
+    "image": "base-plate-with-socket.png"
+  },
+  {
+    "title": "Base Plate",
+    "slug": "base-plate",
+    "description": "Robust steel base plates for stable foundation support in scaffolding applications.",
+    "image": "base-plate.png"
+  },
+  {
+    "title": "Waller Plate",
+    "slug": "waller-plate",
+    "description": "Specialized wall-mounting plates for scaffolding anchoring and stabilization.",
+    "image": "waller-plate.png"
+  },
+  {
+    "title": "Stub Pin",
+    "slug": "stub-pin",
+    "description": "Short locking pins for securing scaffolding connections and joints.",
+    "image": "stub-pin.png"
+  },
+  {
+    "title": "Wedge Pin",
+    "slug": "wedge-pin",
+    "description": "Tapered wedge pins for quick-lock scaffolding assembly and disassembly.",
+    "image": "wedge-pin.png"
+  },
+  {
+    "title": "Drop Head",
+    "slug": "drop-head",
+    "description": "Adjustable drop head for formwork support and scaffolding height adjustments.",
+    "image": "drop-head.png"
+  },
+  {
+    "title": "G-Pin",
+    "slug": "g-pin",
+    "description": "G-shaped locking pins for securing scaffolding tubes and couplers.",
+    "image": "g-pin.png"
+  },
+  {
+    "title": "Hex Nut",
+    "slug": "hex-nut",
+    "description": "High-strength hexagonal nuts for scaffolding assembly and tie rod connections.",
+    "image": "hex-nut.png"
+  }
+]

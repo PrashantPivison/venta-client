@@ -1,0 +1,25 @@
+{
+  "phones": [
+    "+91 80803 46007",
+    "+91 91677 26770",
+    "+91 73035 77799"
+  ],
+  "email": "mail@ventainternational.in",
+  "addresses": [
+    {
+      "type": "Corporate Office",
+      "address": "Office no. 229, Satra Plaza, Plot no. 19/20, Sector - 19D, Vashi, Navi Mumbai, 400705, Maharashtra, INDIA.",
+      "mapUrl": "https://maps.google.com/?q=Office+229+Satra+Plaza+Sector+19D+Vashi+Navi+Mumbai+400705"
+    },
+    {
+      "type": "Warehouse",
+      "address": "Shop no. - 6, Plot no. 66, Sector 23, Turbhe, Navi Mumbai, 400703, Maharashtra, INDIA.",
+      "mapUrl": "https://maps.google.com/?q=Shop+6+Plot+66+Sector+23+Turbhe+Navi+Mumbai+400703"
+    }
+  ],
+  "social": {
+    "facebook": "https://www.facebook.com/ventainternational",
+    "instagram": "https://www.instagram.com/venta_international/",
+    "linkedin": "https://www.linkedin.com/company/venta-international/"
+  }
+}
