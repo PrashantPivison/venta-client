@@ -2,9 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { VentaButton } from './ui/venta-button';
+import customOrdersAPI from '@/api/customOrders';
 
 interface ContactFormProps {
   defaultInquiryType?: string;
+  productId?: string; // Add productId for custom product inquiries
+  productName?: string; // Add productName for display
+  isCustomProduct?: boolean; // Flag to identify if it's a custom product inquiry
 }
 
 declare global {
@@ -13,7 +17,12 @@ declare global {
   }
 }
 
-export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
+export function ContactForm({ 
+  defaultInquiryType, 
+  productId, 
+  productName,
+  isCustomProduct = false 
+}: ContactFormProps = {}) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -27,7 +36,6 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
   // Load reCAPTCHA v3 script
@@ -62,7 +70,42 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
     setSuccess(false);
 
     try {
-      // Get reCAPTCHA v3 token
+      // If it's a custom product inquiry, use the custom inquiry API
+      if (isCustomProduct && productId) {
+        const inquiryData = {
+          productId,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          countryCode: formData.countryCode,
+          inquiryFor: formData.inquiryType || 'Custom Product Inquiry',
+          message: formData.message
+        };
+
+        const result = await customOrdersAPI.createInquiry(inquiryData);
+        
+        if (result.success) {
+          setSuccess(true);
+          // Reset form
+          setFormData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            countryCode: '+91',
+            phone: '',
+            inquiryType: defaultInquiryType || '',
+            message: ''
+          });
+          setTimeout(() => setSuccess(false), 5000);
+        } else {
+          setError(result.message || 'Failed to submit inquiry');
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Original email submission logic for regular contact form
       if (!window.grecaptcha || !siteKey) {
         setError("reCAPTCHA not loaded. Please refresh the page.");
         setLoading(false);
@@ -72,8 +115,7 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
       window.grecaptcha.ready(async () => {
         try {
           const token = await window.grecaptcha.execute(siteKey, { action: 'submit' });
-          
-          // Send data to API route
+
           const response = await fetch("/api/sendEmail", {
             method: "POST",
             headers: {
@@ -86,7 +128,7 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
           });
 
           const result = await response.json();
-          
+
           if (!response.ok) {
             setError(result.error || "Submission failed. Please try again.");
             setLoading(false);
@@ -95,7 +137,7 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
 
           setLoading(false);
           setSuccess(true);
-          
+
           // Reset form after success
           setFormData({
             firstName: '',
@@ -106,7 +148,7 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
             inquiryType: defaultInquiryType || '',
             message: ''
           });
-          
+
           // Hide success message after 5 seconds
           setTimeout(() => setSuccess(false), 5000);
         } catch (err: any) {
@@ -120,7 +162,7 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -130,60 +172,66 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Show product name if it's a custom product inquiry */}
+      {isCustomProduct && productName && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-sm font-medium text-gray-700">
+            Inquiry for: <span className="text-yellow-800">{productName}</span>
+          </p>
+        </div>
+      )}
+
       {/* Name Fields */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-6">
         <div>
-          <label htmlFor="firstName" className="block text-sm font-semibold text-[#1C1C1C] mb-2">
+          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
             First Name *
           </label>
           <input
             type="text"
             id="firstName"
             name="firstName"
-            required
             value={formData.firstName}
             onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#fac938] focus:ring-2 focus:ring-[#fac938]/20 outline-none transition-all"
-            placeholder="John"
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
           />
         </div>
         <div>
-          <label htmlFor="lastName" className="block text-sm font-semibold text-[#1C1C1C] mb-2">
+          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
             Last Name *
           </label>
           <input
             type="text"
             id="lastName"
             name="lastName"
-            required
             value={formData.lastName}
             onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#fac938] focus:ring-2 focus:ring-[#fac938]/20 outline-none transition-all"
-            placeholder="Doe"
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
           />
         </div>
       </div>
 
       {/* Email */}
       <div>
-        <label htmlFor="email" className="block text-sm font-semibold text-[#1C1C1C] mb-2">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
           Email Address *
         </label>
         <input
           type="email"
           id="email"
           name="email"
-          required
           value={formData.email}
           onChange={handleChange}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#fac938] focus:ring-2 focus:ring-[#fac938]/20 outline-none transition-all"
-          placeholder="john.doe@example.com"
+          required
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
         />
       </div>
 
       {/* Phone */}
       <div>
-        <label htmlFor="phone" className="block text-sm font-semibold text-[#1C1C1C] mb-2">
+        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
           Phone Number *
         </label>
         <div className="flex gap-2">
@@ -191,7 +239,7 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
             name="countryCode"
             value={formData.countryCode}
             onChange={handleChange}
-            className="px-4 py-3 rounded-lg border border-gray-300 focus:border-[#fac938] focus:ring-2 focus:ring-[#fac938]/20 outline-none transition-all bg-white"
+            className="w-32 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
           >
             <option value="+91">+91 (India)</option>
             <option value="+1">+1 (USA)</option>
@@ -207,27 +255,26 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
             type="tel"
             id="phone"
             name="phone"
-            required
             value={formData.phone}
             onChange={handleChange}
-            className="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:border-[#fac938] focus:ring-2 focus:ring-[#fac938]/20 outline-none transition-all"
-            placeholder="9876543210"
+            required
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
           />
         </div>
       </div>
 
       {/* Inquiry Type */}
       <div>
-        <label htmlFor="inquiryType" className="block text-sm font-semibold text-[#1C1C1C] mb-2">
+        <label htmlFor="inquiryType" className="block text-sm font-medium text-gray-700 mb-2">
           Inquiry For *
         </label>
         <select
           id="inquiryType"
           name="inquiryType"
-          required
           value={formData.inquiryType}
           onChange={handleChange}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#fac938] focus:ring-2 focus:ring-[#fac938]/20 outline-none transition-all bg-white"
+          required
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
         >
           <option value="">Select inquiry type</option>
           {inquiryOptions.map(option => (
@@ -238,50 +285,59 @@ export function ContactForm({ defaultInquiryType }: ContactFormProps = {}) {
 
       {/* Message */}
       <div>
-        <label htmlFor="message" className="block text-sm font-semibold text-[#1C1C1C] mb-2">
+        <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
           Message *
         </label>
         <textarea
           id="message"
           name="message"
-          required
-          rows={6}
           value={formData.message}
           onChange={handleChange}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#fac938] focus:ring-2 focus:ring-[#fac938]/20 outline-none transition-all resize-none"
-          placeholder="Tell us about your requirements..."
+          required
+          rows={5}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent resize-none"
         />
       </div>
 
       {/* Privacy Statement */}
-      <div className="text-sm text-[#1C1C1C]/70">
-        By submitting this form, you agree to our <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-[#fac938] hover:underline">Privacy Policy</a> and consent to Venta International contacting you about your inquiry.
-      </div>
+      <p className="text-xs text-gray-600">
+        By submitting this form, you agree to our Privacy Policy and consent to Venta International contacting you about your inquiry.
+      </p>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-          <span className="font-semibold">Error:</span> {error}
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <p className="font-medium">Error: {error}</p>
         </div>
       )}
 
       {/* Success Message */}
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
-          <span className="font-semibold">Success!</span> Your message has been sent. We'll get back to you soon.
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <p className="font-medium">Success! Your message has been sent. We'll get back to you soon.</p>
         </div>
       )}
 
       {/* Submit Button */}
-      <VentaButton type="submit" className="w-full" disabled={loading}>
+      <VentaButton
+        type="submit"
+        disabled={loading}
+        className="w-full"
+      >
         {loading ? 'Sending...' : 'Send Message'}
       </VentaButton>
-      
-      <p className="text-xs text-center text-[#1C1C1C]/60">
-        This site is protected by reCAPTCHA and the Google{' '}
-        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#fac938] hover:underline">Privacy Policy</a> and{' '}
-        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-[#fac938] hover:underline">Terms of Service</a> apply.
-      </p>
+
+      {!isCustomProduct && (
+        <p className="text-xs text-gray-500 text-center">
+          This site is protected by reCAPTCHA and the Google{' '}
+          <a href="https://policies.google.com/privacy" className="text-yellow-600 hover:underline">
+            Privacy Policy
+          </a> and{' '}
+          <a href="https://policies.google.com/terms" className="text-yellow-600 hover:underline">
+            Terms of Service
+          </a> apply.
+        </p>
+      )}
     </form>
   );
 }

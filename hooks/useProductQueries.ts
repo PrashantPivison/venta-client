@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import productAPI, { Product } from '@/api/products';
+import customOrdersAPI, { CustomProduct } from '@/api/customOrders';
 
 /**
  * Hook to fetch all products with caching
@@ -54,5 +55,17 @@ export function useProductBySlug(slug: string | null) {
       return await productAPI.getProductBySlug(slug);
     },
     enabled: !!slug, // Only run query if slug is provided
+  });
+}
+
+/**
+ * Hook to fetch all custom products with caching
+ */
+export function useCustomProducts() {
+  return useQuery({
+    queryKey: ['customProducts'],
+    queryFn: async () => {
+      return await customOrdersAPI.getCustomProducts();
+    },
   });
 }

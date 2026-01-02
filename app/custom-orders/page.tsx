@@ -6,22 +6,24 @@ import { Hero } from '@/components/Hero';
 import { ContactForm } from '@/components/ContactForm';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { Package, Mail, X } from 'lucide-react';
-import customOrdersData from '@/data/custom-orders.json';
-
-interface CustomOrder {
-  title: string;
-  slug: string;
-  description: string;
-  image: string;
-}
+import { Package, Mail, X, Loader } from 'lucide-react';
+import { useCustomProducts } from '@/hooks/useProductQueries';
+import { CustomProduct } from '@/api/customOrders';
 
 export default function CustomOrdersPage() {
+  const { data: customProducts = [], isLoading, error } = useCustomProducts();
   const [isVisible, setIsVisible] = useState(false);
   const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
-  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<CustomProduct | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // When products load, show all items immediately
+  useEffect(() => {
+    if (customProducts.length > 0) {
+      setVisibleItems(new Set(Array.from({ length: customProducts.length }, (_, i) => i)));
+    }
+  }, [customProducts]);
 
   useEffect(() => {
     const sectionObserver = new IntersectionObserver(
@@ -93,49 +95,63 @@ export default function CustomOrdersPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-            {customOrdersData.map((product: CustomOrder, index: number) => (
-              <div
-                key={product.slug}
-                ref={(el) => {
-                  if (el) {
-                    itemRefs.current[index] = el;
-                  }
-                }}
-                className={`group transition-all duration-700 ${
-                  visibleItems.has(index) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                }`}
-                style={{ transitionDelay: `${(index % 8) * 50}ms` }}
-              >
-                <div className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-[#fac938] hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                  {/* Product Image */}
-                  <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100">
-                    <Image
-                      src={`/assets/custom-orders/${product.image}`}
-                      alt={product.title}
-                      fill
-                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
+            {isLoading ? (
+              <div className="col-span-full flex justify-center items-center py-12">
+                <Loader className="w-8 h-8 text-[#fac938] animate-spin" />
+              </div>
+            ) : error ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-red-500">Failed to load products. Please try again.</p>
+              </div>
+            ) : customProducts.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-[#1C1C1C]/70">No custom products available.</p>
+              </div>
+            ) : (
+              customProducts.map((product: CustomProduct, index: number) => (
+                <div
+                  key={product._id}
+                  ref={(el) => {
+                    if (el) {
+                      itemRefs.current[index] = el;
+                    }
+                  }}
+                  className={`group transition-all duration-700 ${
+                    visibleItems.has(index) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                  }`}
+                  style={{ transitionDelay: `${(index % 8) * 50}ms` }}
+                >
+                  <div className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-[#fac938] hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                    {/* Product Image */}
+                    <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100">
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
 
-                  {/* Content */}
-                  <div className="p-4 md:p-6 flex flex-col flex-grow">
-                    <h3 className="text-sm md:text-lg font-bold text-[#1C1C1C] mb-2 group-hover:text-[#fac938] transition-colors line-clamp-2">
-                      {product.title}
-                    </h3>
-                    <p className="text-xs md:text-sm text-[#1C1C1C]/70 mb-4 line-clamp-2 flex-grow">
-                      {product.description}
-                    </p>
-                    <button
-                      onClick={() => setSelectedProduct(product.title)}
-                      className="inline-flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-[#fac938] text-[#3b2f0d] rounded-lg text-xs md:text-sm font-semibold hover:bg-[#e8b830] transition-colors w-full"
-                    >
-                      <Mail className="w-3 h-3 md:w-4 md:h-4" />
-                      Inquire Now
-                    </button>
+                    {/* Content */}
+                    <div className="p-4 md:p-6 flex flex-col flex-grow">
+                      <h3 className="text-sm md:text-lg font-bold text-[#1C1C1C] mb-2 group-hover:text-[#fac938] transition-colors line-clamp-2">
+                        {product.name}
+                      </h3>
+                      <p className="text-xs md:text-sm text-[#1C1C1C]/70 mb-4 line-clamp-2 flex-grow">
+                        {product.description}
+                      </p>
+                      <button
+                        onClick={() => setSelectedProduct(product)}
+                        className="inline-flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-[#fac938] text-[#3b2f0d] rounded-lg text-xs md:text-sm font-semibold hover:bg-[#e8b830] transition-colors w-full"
+                      >
+                        <Mail className="w-3 h-3 md:w-4 md:h-4" />
+                        Inquire Now
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -174,7 +190,7 @@ export default function CustomOrdersPage() {
             <div className="sticky top-0 bg-[#fac938] p-4 md:p-6 flex items-center justify-between rounded-t-2xl">
               <div>
                 <h3 className="text-xl md:text-2xl font-bold text-[#3b2f0d]">Custom Order Inquiry</h3>
-                <p className="text-[#3b2f0d]/70 text-sm mt-1">{selectedProduct}</p>
+                <p className="text-[#3b2f0d]/70 text-sm mt-1">{selectedProduct.name}</p>
               </div>
               <button
                 onClick={() => setSelectedProduct(null)}
@@ -185,7 +201,12 @@ export default function CustomOrdersPage() {
               </button>
             </div>
             <div className="p-6 md:p-8">
-              <ContactForm defaultInquiryType={`Custom Order: ${selectedProduct}`} />
+              <ContactForm 
+                defaultInquiryType={`Custom Order: ${selectedProduct.name}`}
+                productId={selectedProduct._id}
+                productName={selectedProduct.name}
+                isCustomProduct={true}
+              />
             </div>
           </div>
         </div>
