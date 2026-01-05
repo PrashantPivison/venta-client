@@ -91,8 +91,8 @@ export function IndustriesWeSupport() {
             We Support A Wide Range Of <span className="text-[#F2C236]">Industries</span>
           </h2>
           
-          <VentaButton href="/services" className="text-base px-6 py-3">
-            More Details
+          <VentaButton href="/contact" className="text-base px-6 py-3">
+            Get in Touch
           </VentaButton>
         </div>
 
@@ -138,10 +138,10 @@ export function IndustriesWeSupport() {
                     {industry.description}
                   </p>
                   
-                  <button className="text-[#F2C236] flex items-center gap-2 group-hover:gap-3 transition-all" style={{ fontSize: '14px', fontWeight: '600' }}>
+                  {/* <button className="text-[#F2C236] flex items-center gap-2 group-hover:gap-3 transition-all" style={{ fontSize: '14px', fontWeight: '600' }}>
                     Learn More
                     <ArrowRight className="w-4 h-4" />
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>
