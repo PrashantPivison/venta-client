@@ -7,7 +7,7 @@ export interface Product {
   price: number;
   sku: string | null;
   description: string;
-  image?: string;
+  image: string;
   images: string[];
   features?: string[];
   specifications?: Array<{
@@ -70,6 +70,24 @@ class ProductAPI {
       throw new Error(error.message || 'Product not found');
     }
   }
+
+  /**
+   * Get featured products only
+   * Returns only products marked as featured with images
+   * Limit: 6 products max
+   * Used by FeaturedProducts section on homepage
+   * @returns Promise<Product[]> Array of featured products
+   */
+ async getFeaturedProducts(): Promise<Product[]> {
+  try {
+    const response = await apiClient.get<Product[]>('/client/products/featured');
+    console.log('API response for featured products:', response);
+    return response;
+  } catch (error: any) {
+    console.error('Error fetching featured products:', error);
+    throw new Error(error.message || 'Failed to fetch featured products');
+  }
+}
 }
 
 // Export singleton instance

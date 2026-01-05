@@ -10,18 +10,21 @@ const slides = [
     title: "Leaders in Scaffolding Solutions",
     subtitle: "Manufacturers & Suppliers of Custom Machinery, Scaffolding Materials and Accessories to world's leading construction & industrial sites.",
     cta: "Explore More",
+    route: "/about",
     image: "hero-1.png"
   },
   {
     title: "Premium Quality Equipment",
     subtitle: "Trusted by leading construction companies across India, Europe, Africa, and the Middle East for over a decade.",
     cta: "View Products",
+    route: "/shop",
     image: "hero-2.jpg"
   },
   {
     title: "Custom Solutions for Your Projects",
     subtitle: "Expert engineering and manufacturing services tailored to meet your specific scaffolding and machinery needs.",
     cta: "Contact Us",
+    route: "/contact",
     image: "hero-3.jpg"
   }
 ];
@@ -133,7 +136,7 @@ export function HeroSlideshow() {
               {slides[currentSlide].subtitle}
             </p>
             <Link 
-              href="#services"
+              href={slides[currentSlide].route}
               className="inline-block bg-[#fac938] hover:bg-[#e8b821] transition-colors px-8 py-4 rounded-lg font-bold text-[#1e1e1e] text-lg uppercase"
             >
               {slides[currentSlide].cta}
