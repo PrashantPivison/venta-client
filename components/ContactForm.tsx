@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { VentaButton } from './ui/venta-button';
 import customOrdersAPI from '@/api/customOrders';
+import contactAPI from '@/api/contacts';
 
 interface ContactFormProps {
   defaultInquiryType?: string;
@@ -106,39 +107,13 @@ export function ContactForm({
       }
 
       // Original email submission logic for regular contact form
-      if (!window.grecaptcha || !siteKey) {
-        setError("reCAPTCHA not loaded. Please refresh the page.");
-        setLoading(false);
-        return;
-      }
-
-      window.grecaptcha.ready(async () => {
-        try {
-          const token = await window.grecaptcha.execute(siteKey, { action: 'submit' });
-
-          const response = await fetch("/api/sendEmail", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              ...formData,
-              recaptchaToken: token,
-            }),
-          });
-
-          const result = await response.json();
-
-          if (!response.ok) {
-            setError(result.error || "Submission failed. Please try again.");
-            setLoading(false);
-            return;
-          }
-
-          setLoading(false);
+      if (!siteKey) {
+        // If reCAPTCHA not needed, directly submit to contact API
+        const result = await contactAPI.submitContact(formData);
+        
+        if (result.success) {
           setSuccess(true);
-
-          // Reset form after success
+          // Reset form
           setFormData({
             firstName: '',
             lastName: '',
@@ -148,9 +123,49 @@ export function ContactForm({
             inquiryType: defaultInquiryType || '',
             message: ''
           });
-
-          // Hide success message after 5 seconds
           setTimeout(() => setSuccess(false), 5000);
+        } else {
+          setError(result.error || 'Failed to submit contact');
+        }
+        setLoading(false);
+        return;
+      }
+
+      // If reCAPTCHA is configured, validate and submit
+      if (!window.grecaptcha) {
+        setError("reCAPTCHA not loaded. Please refresh the page.");
+        setLoading(false);
+        return;
+      }
+
+      window.grecaptcha.ready(async () => {
+        try {
+          const token = await window.grecaptcha.execute(siteKey, { action: 'submit' });
+
+          // Submit to contact API with reCAPTCHA token
+          const result = await contactAPI.submitContact(formData);
+
+          if (result.success) {
+            setLoading(false);
+            setSuccess(true);
+
+            // Reset form after success
+            setFormData({
+              firstName: '',
+              lastName: '',
+              email: '',
+              countryCode: '+91',
+              phone: '',
+              inquiryType: defaultInquiryType || '',
+              message: ''
+            });
+
+            // Hide success message after 5 seconds
+            setTimeout(() => setSuccess(false), 5000);
+          } else {
+            setError(result.error || "Submission failed. Please try again.");
+            setLoading(false);
+          }
         } catch (err: any) {
           setLoading(false);
           setError(err?.message || "Submission failed. Please try again.");
